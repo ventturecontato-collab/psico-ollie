@@ -8,6 +8,7 @@ import PDFDownloadCards from '../components/PDFDownloadCards';
 import RecommendationCard from '../components/RecommendationCard';
 import TechniqueCard from '../components/TechniqueCard';
 import AlertBanner from '../components/AlertBanner';
+import VideoSection from '../components/VideoSection';
 import { RotateCcw } from 'lucide-react';
 
 interface ResultsProps {
@@ -48,6 +49,12 @@ export default function Results({ plan, answers, onRestart }: ResultsProps) {
       <div className="mb-6">
         <h3 className="text-lg font-bold text-[#e5e5e5] mb-4">Seus Materiais</h3>
         <PDFDownloadCards plan={plan} answers={answers} />
+      </div>
+
+      {/* Aulas Recomendadas */}
+      <div className="mb-6">
+        <h3 className="text-lg font-bold text-[#e5e5e5] mb-4">Aulas Recomendadas</h3>
+        <VideoSection />
       </div>
 
       {/* Recomendacoes */}

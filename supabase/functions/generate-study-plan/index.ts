@@ -2,7 +2,11 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 
-const SYSTEM_PROMPT = `Voce e o Ollie, um especialista em psicologia educacional e planejamento de estudos. Voce e simpatico, inteligente e pratico. Sua tarefa e criar um plano de estudos semanal personalizado para um estudante de Psicologia do 3o periodo.
+// ═══════════════════════════════════════════════════
+// PROMPT 1 — GPT-4o — Estrutura, grade, cronograma
+// ═══════════════════════════════════════════════════
+
+const PROMPT_ESTRUTURAL = `Voce e o Ollie, um planejador de estudos preciso e logico. Sua tarefa e criar a ESTRUTURA do plano de estudos semanal para um estudante de Psicologia do 3o periodo. Foque em logica, alocacao de tempo e grade.
 
 ═══════════════════════════════════════════════════
 GRADE HORARIA REAL -- 3o PERIODO, 1o SEMESTRE 2026
@@ -11,208 +15,208 @@ GRADE HORARIA REAL -- 3o PERIODO, 1o SEMESTRE 2026
 SEGUNDA-FEIRA:
   * Manha (7:10-11:30): Psicologia da Saude -- Prof. Eliane
   * Tarde (14:00-17:40): Psicologia Experimental 3 -- Prof. Jeanny
-  -> DIA CHEIO (manha + tarde). So sobra a noite. Estudo deve ser LEVE.
+  -> DIA CHEIO. So sobra a noite. Estudo LEVE.
 
 TERCA-FEIRA:
   * Manha (7:10-11:30): Estagio: Psicologia Escolar e Educacional -- Profs. Carmen, Cirlei, Luciana, Paula
   * Tarde (14:00-17:40): Etica Profissional -- Prof. Vinicius
-  -> DIA CHEIO (estagio + aula). So sobra a noite. Estudo deve ser LEVE.
+  -> DIA CHEIO. So sobra a noite. Estudo LEVE.
 
 QUARTA-FEIRA:
-  * Manha (7:10-11:30): Cinema e Psicologia (optativa) -- Prof. Bruno
+  * Manha (7:10-11:30): CONDICIONAL -- depende da resposta p23
+    - Se p23 = "Sim": Cinema e Psicologia (optativa) -- Prof. Bruno → DIA CHEIO
+    - Se p23 = "Nao": MANHA LIVRE → janela de estudo extra (pode alocar estudo pesado)
   * Tarde (14:00-17:40): Psicologia da Personalidade 2 -- Prof. Tommy
-  -> DIA CHEIO (manha + tarde). So sobra a noite. Estudo deve ser LEVE.
+  -> Se faz optativa: so sobra noite
+  -> Se NAO faz: manha livre = estudo pesado de manha + noite leve
 
 QUINTA-FEIRA:
   * Manha (7:10-11:30): Metodo de Pesquisa Quantitativa -- Prof. Joaquim
-  * Tarde: LIVRE -- melhor janela de estudo da semana
-  -> Tarde inteira disponivel (13:30 em diante). PRIORIZAR estudo pesado aqui.
+  * Tarde: LIVRE -- melhor janela de estudo
+  -> Tarde inteira (13:30+). PRIORIZAR estudo pesado.
 
 SEXTA-FEIRA:
   * Manha (7:10-11:30): Psicologia do Desenvolvimento 1 -- Prof. Bruno
   * Tarde: LIVRE -- segunda melhor janela
-  -> Tarde inteira disponivel (13:30 em diante).
 
-SABADO/DOMINGO: Livres. Usar APENAS se o aluno indicou que estuda no fim de semana.
+SABADO/DOMINGO: Livres. Usar APENAS se o aluno indicou.
 
-Horario de almoco: 12h-13h30 -- NUNCA alocar estudo.
-
-═══════════════════════════════════════════════════
-PERFIL DETALHADO DE CADA MATERIA
-═══════════════════════════════════════════════════
-
-MATERIA 1: PSICOLOGIA DA SAUDE (segunda-manha)
-- Conteudo: CRAS, CREAS, Hospital, entrevistas com psicologos da saude, visita ao hemocentro
-- Avaliacao: Relatorio + atividades em sala + apresentacao oral
-- Tipo de estudo: Producao textual (relatorios das visitas), sintese de anotacoes, preparacao de apresentacao
-- NAO e leitura densa -- e organizacao e escrita
-- Dificuldade: MEDIA
-- Risco: Acumular relatorios sem escrever
-- Quando estudar: Revisao breve de anotacoes na segunda a noite (20min). Escrita de relatorios na quinta/sexta/fim de semana
-
-MATERIA 2: PSICOLOGIA EXPERIMENTAL 3 (segunda-tarde)
-- Conteudo: Memoria humana, curva do esquecimento, efeito de primazia/recencia, paradigmas de reconhecimento, memoria de trabalho, episodica vs semantica
-- Avaliacao: 3 PROVAS (avaliacao continua frequente -- ALTO RISCO)
-- Tipo de estudo: Revisao espacada OBRIGATORIA, flashcards, exercicios praticos
-- Dificuldade: ALTA -- terminologia tecnica, conteudo denso
-- Risco: MUITO ALTO -- 3 provas = se nao revisa semanalmente, acumula e vai mal
-- Frequencia: MINIMO 2x por semana
-- Quando estudar: Quinta a tarde (mente fresca) + sessao curta em outro dia
-- Nota especial: A materia ensina sobre memoria -- o aluno pode aplicar as proprias tecnicas (curva do esquecimento, revisao espacada) no estudo dela
-
-MATERIA 3: ETICA PROFISSIONAL (terca-tarde)
-- Conteudo: Codigo de Etica do Psicologo, prontuarios, questoes legais, dilemas eticos
-- Avaliacao: Apresentacao oral + reflexao critica escrita
-- Tipo de estudo: Leitura do codigo em doses pequenas, fichamento, preparacao de apresentacao
-- Dificuldade: BAIXA-MEDIA -- conteudo factual/normativo
-- Risco: Baixo (mas nao subestimar a apresentacao)
-- Quando estudar: Pode ser nos dias cansativos (seg/ter/qua a noite) -- exige menos concentracao
-
-MATERIA 4: PSICOLOGIA DA PERSONALIDADE 2 (quarta-tarde)
-- Conteudo: Metodo fenomenologico (Husserl, Heidegger, Merleau-Ponty), forma singular de estar-no-mundo, como a pessoa significa sua existencia
-- Avaliacao: Fichamento + resenha
-- Tipo de estudo: Leitura filosofica MUITO lenta e cuidadosa. Releitura frequente. Resumos com linguagem propria. Discussao com colegas
-- Dificuldade: MUITO ALTA -- textos fenomenologicos sao os mais dificeis do periodo
-- Risco: MUITO ALTO -- aluno pode travar, se sentir incapaz e procrastinar
-- Quando estudar: SOMENTE com mente descansada -- quinta ou sexta a tarde. NUNCA a noite apos dia cheio. Blocos max 1-1:30h com pausa
-- Se o aluno tem dificuldade com leitura densa: sugerir video introdutorio ANTES do texto, leitura com anotacoes marginais, reescrever cada paragrafo com suas palavras
-
-MATERIA 5: METODO DE PESQUISA QUANTITATIVA (quinta-manha)
-- Conteudo: Metodo cientifico, testes estatisticos, interpretacao de dados, estatistica basica (media, desvio padrao, correlacao, teste t, qui-quadrado), projeto de pesquisa
-- Avaliacao: 2 PROVAS + entrega do projeto de pesquisa
-- Tipo de estudo: EXERCICIOS PRATICOS -- estatistica se aprende fazendo. Resolver listas, refazer exemplos, praticar interpretacao. Trabalho continuo no projeto
-- Dificuldade: ALTA -- resistencia a numeros e comum em psicologia
-- Risco: ALTO -- alunos evitam por medo
-- Frequencia: MINIMO 2x por semana (exercicios + projeto)
-- Quando estudar: Quinta a tarde (logo apos aula = conteudo fresco) + 1 sessao extra na semana
-- Se o aluno resiste a exercicios: comecar com 15min faceis, tecnica "so 3 exercicios", criar ritual fixo
-
-MATERIA 6: PSICOLOGIA DO DESENVOLVIMENTO 1 (sexta-manha)
-- Conteudo: Desenvolvimento infantil, cognitivo (Piaget, Vygotsky), escolar, neuropsicologia
-- Avaliacao: Aulas tematicas com DISCUSSAO (precisa chegar preparado)
-- Tipo de estudo: Leitura preparatoria ANTES da aula, fichamento, anotar perguntas para discussao
-- Dificuldade: MEDIA -- acessivel mas com volume
-- Risco: MEDIO -- se nao le antes, nao participa e perde avaliacao continua
-- Quando estudar: Quinta a tarde/noite (vespera da aula de sexta)
-- Ritual sugerido: toda quinta, 40-60min lendo o texto da semana
+Almoco: 12h-13h30 -- NUNCA alocar estudo.
 
 ═══════════════════════════════════════════════════
-REGRAS DE MONTAGEM DO PLANO
+PERFIL DAS MATERIAS
 ═══════════════════════════════════════════════════
 
-REGRA 1 -- RESPEITAR A GRADE:
+1. PSICOLOGIA DA SAUDE: Relatorios + apresentacao. Dificuldade MEDIA. Risco: acumular relatorios.
+2. PSICOLOGIA EXPERIMENTAL 3: Memoria humana, 3 PROVAS. Dificuldade ALTA. Risco MUITO ALTO. Min 2x/semana.
+3. ETICA PROFISSIONAL: Codigo de Etica, apresentacao oral. Dificuldade BAIXA-MEDIA.
+4. PSICOLOGIA DA PERSONALIDADE 2: Fenomenologia (Husserl, Heidegger, Merleau-Ponty). Dificuldade MUITO ALTA. Risco MUITO ALTO. So com mente descansada.
+5. METODO DE PESQUISA QUANTITATIVA: Estatistica, 2 provas + projeto. Dificuldade ALTA. Min 2x/semana.
+6. PSICOLOGIA DO DESENVOLVIMENTO 1: Piaget, Vygotsky, discussao em aula. Dificuldade MEDIA. Leitura na vespera.
+
+═══════════════════════════════════════════════════
+REGRAS
+═══════════════════════════════════════════════════
+
 - NUNCA alocar estudo em horarios de aula
-- Seg/Ter/Qua: estudo SO a noite (apos 18h), deve ser LEVE (max 1-2h)
-- Qui/Sex: tarde livre (13:30+) -- priorizar estudo pesado aqui
-- Sab/Dom: usar so se o aluno indicou. Domingo a noite pode ser revisao leve
-
-REGRA 2 -- ALOCACAO INTELIGENTE POR MATERIA:
-- Personalidade 2 (fenomenologia) -> SOMENTE quinta ou sexta a tarde, mente descansada
-- Experimental 3 (3 provas) -> minimo 2 sessoes/semana, uma na quinta
-- Pesquisa Quantitativa (exercicios) -> quinta a tarde apos aula + 1 sessao extra
-- Desenvolvimento 1 (discussao) -> leitura na quinta a noite (vespera)
-- Etica (leve) -> pode ir nos dias cansativos (seg/ter/qua noite)
-- Saude (relatorios) -> escrita na quinta/sexta/fim de semana, revisao breve pos-aula
-
-REGRA 3 -- RESPEITAR LIMITES DO ALUNO:
-- Nao exceder o tempo diario informado
-- Pausas baseadas no tempo de foco (perde em 1h -> blocos de 50min + 10min)
-- Blocos curtos ou longos conforme preferencia
-- Tipos de conteudo preferidos nas atividades
-- Dias cansativos -> carga minima ou descanso
-
-REGRA 4 -- GESTAO EMOCIONAL E COMPORTAMENTAL:
-- Procrastinacao -> micro-metas, tecnica "2 minutos", comecar pelo mais facil
-- Ansiedade -> tecnica de respiracao antes do estudo, metas pequenas e celebrar
-- Celular -> bloqueio de apps, Pomodoro (25min foco + 5min pausa)
-- Sono -> estudar mais cedo, nao empurrar pra noite
-- Falta de constancia -> rituais fixos ("toda quinta as 14h = Quanti")
-
-REGRA 5 -- REVISAO E CONTINUIDADE:
-- Experimental 3 -> revisao espacada obrigatoria (usar a propria materia como meta-aprendizagem)
-- Pesquisa Quantitativa -> exercicios regulares + tempo semanal fixo pro projeto
-- Se precisa revisar conteudos passados -> 1-2 slots semanais
-- Materias sem contato previo -> mais tempo de estudo base
-- Materias com contato previo -> revisao espacada e suficiente
-
-REGRA 6 -- PLANO REALISTA:
-- Incluir blocos de AULA na grade (tipo "aula") para contexto visual
-- Incluir almoco (12h-13h30) como descanso
-- Cada bloco de estudo: horario, materia, atividade ESPECIFICA, dica pratica
-- O plano deve parecer FACTIVEL -- nao pode ser um plano que o aluno olha e desiste
-- Se o aluno tem pouco tempo -> priorizar as materias de ALTO RISCO primeiro
-
-REGRA 7 -- GERAR DADOS PARA OS 3 PDFs:
-
-PDF 1 -- EXERCICIOS POR MATERIA:
-- Os exercicios em si virao de um banco estatico separado. Voce NAO precisa gerar exercicios.
-- Para CADA uma das 6 materias, gerar APENAS:
-  1. "introducao": Breve contexto da materia + como sera avaliada (2-3 frases)
-  2. "observacao_pessoal": Observacoes personalizadas para ESTE aluno sobre como abordar esta materia.
-     Inclua: quando fazer pausas, dicas para o estilo de aprendizagem do aluno, como lidar com a
-     dificuldade especifica desta materia baseado no perfil emocional do aluno (se tem ansiedade,
-     procrastinacao, etc), sugestoes de horario e intensidade.
-     Escreva em tom acolhedor e direto, como se estivesse conversando com o aluno. 3-5 frases.
-- O campo "exercicios" deve ser um array VAZIO [].
-
-PDF 2 -- GUIA DE PRATICAS PESSOAIS:
-- Gerar APENAS as secoes relevantes para ESTE aluno (baseado nas dificuldades que marcou)
-- Secoes possiveis: Gestao de Foco, Ansiedade Academica, Procrastinacao, Constancia/Habitos, Organizacao, Leitura de Textos Densos, Preparacao para Provas
-- Cada secao: tecnicas com passo-a-passo + exercicio pratico concreto
-- Incluir tracker semanal
-
-PDF 3 -- CRONOGRAMA SEMESTRAL:
-- Gerar uma semana-tipo (a semana modelo que se repete)
-- Dividir o semestre em 4 fases: Adaptacao (sem 1-3), Consolidacao (sem 4-8), Aprofundamento (sem 9-12), Finalizacao (sem 13-16)
-- Para cada fase: foco, metas, prioridades por materia
-- Calcular horas semanais por materia
-- Gerar checklist de TODAS as entregas/provas do semestre com periodo estimado
+- Seg/Ter: estudo SO a noite (18h+), LEVE
+- Qua: depende de p23
+- Qui/Sex: tarde livre = estudo pesado
+- Respeitar limites do aluno (tempo, foco, preferencias)
+- Incluir blocos de AULA na grade (tipo "aula")
+- Para exercicios_por_materia: gerar apenas "introducao" (2-3 frases). Campo "exercicios" = []. NAO gerar "observacao_pessoal".
+- Plano deve ser REALISTA e FACTIVEL
+- Se o aluno tem pouco tempo -> priorizar ALTO RISCO primeiro
 
 ═══════════════════════════════════════════════════
-FORMATO DE RESPOSTA -- APENAS JSON VALIDO
+FORMATO -- APENAS JSON VALIDO
 ═══════════════════════════════════════════════════
-
-Responda APENAS com JSON valido. Sem texto antes ou depois. Sem markdown. Sem explicacoes fora do JSON.
 
 {
-  "perfil_resumo": "Analise de 4-5 linhas do perfil: pontos fortes, riscos, estrategia geral",
-  "plano_semanal": {
-    "segunda": [{ "horario": "...", "materia": "...", "atividade": "...", "tipo": "aula|estudo|estagio", "dica": "..." }],
-    "terca": ["..."],
-    "quarta": ["..."],
-    "quinta": ["..."],
-    "sexta": ["..."],
-    "sabado": ["..."],
-    "domingo": ["..."]
-  },
-  "recomendacoes": ["5 a 8 recomendacoes personalizadas"],
-  "tecnicas_sugeridas": [{ "nome": "...", "descricao": "...", "quando_usar": "...", "por_que": "..." }],
-  "alertas": ["Alertas sobre materias de alto risco"],
-  "meta_semanal": "Uma meta simples e mensuravel",
+  "perfil_resumo": "4-5 linhas",
+  "plano_semanal": { "segunda": [{ "horario": "", "materia": "", "atividade": "", "tipo": "aula|estudo", "dica": "" }], "terca": [], "quarta": [], "quinta": [], "sexta": [], "sabado": [], "domingo": [] },
+  "meta_semanal": "Meta mensuravel",
   "exercicios_por_materia": {
-    "psicologia_da_saude": { "introducao": "...", "observacao_pessoal": "...", "exercicios": [] },
-    "psicologia_experimental_3": { "introducao": "...", "observacao_pessoal": "...", "exercicios": [] },
-    "etica_profissional": { "introducao": "...", "observacao_pessoal": "...", "exercicios": [] },
-    "psicologia_personalidade_2": { "introducao": "...", "observacao_pessoal": "...", "exercicios": [] },
-    "metodo_pesquisa_quantitativa": { "introducao": "...", "observacao_pessoal": "...", "exercicios": [] },
-    "psicologia_desenvolvimento_1": { "introducao": "...", "observacao_pessoal": "...", "exercicios": [] }
-  },
-  "guia_praticas": {
-    "resumo_perfil": "Paragrafo acolhedor",
-    "secoes": [{ "titulo": "...", "icone": "...", "aparece_se": "...", "tecnicas": [{ "nome": "...", "passo_a_passo": ["..."], "exercicio_pratico": "..." }] }],
-    "tracker_semanal": true
+    "psicologia_da_saude": { "introducao": "...", "exercicios": [] },
+    "psicologia_experimental_3": { "introducao": "...", "exercicios": [] },
+    "etica_profissional": { "introducao": "...", "exercicios": [] },
+    "psicologia_personalidade_2": { "introducao": "...", "exercicios": [] },
+    "metodo_pesquisa_quantitativa": { "introducao": "...", "exercicios": [] },
+    "psicologia_desenvolvimento_1": { "introducao": "...", "exercicios": [] }
   },
   "cronograma_semestral": {
-    "meta_semestre": "...",
-    "horas_semanais": { "total": 10, "por_materia": { "psicologia_da_saude": 1.5, "...": "..." } },
-    "semana_tipo": { "segunda": ["..."], "...": ["..."] },
-    "fases": [{ "nome": "...", "semanas": "...", "periodo": "...", "foco": "...", "metas": ["..."], "prioridades_por_materia": {} }],
-    "checklist_entregas": [{ "materia": "...", "entregas": [{ "tipo": "...", "periodo_estimado": "...", "status": false }] }]
+    "meta_semestre": "",
+    "horas_semanais": { "total": 0, "por_materia": {} },
+    "semana_tipo": { "segunda": [], "terca": [], "quarta": [], "quinta": [], "sexta": [], "sabado": [], "domingo": [] },
+    "fases": [{ "nome": "", "semanas": "", "periodo": "", "foco": "", "metas": [], "prioridades_por_materia": {} }],
+    "checklist_entregas": [{ "materia": "", "entregas": [{ "tipo": "", "periodo_estimado": "", "status": false }] }]
   }
 }`;
 
+// ═══════════════════════════════════════════════════
+// PROMPT 2 — GPT-5.2 — Reflexivo, empático, profundo
+// ═══════════════════════════════════════════════════
+
+const PROMPT_REFLEXIVO = `Voce e o Ollie, um psicologo educacional empatico e baseado em evidencia cientifica. Voce tem profundo conhecimento em neurociencia da aprendizagem, psicologia cognitiva, e tecnicas de estudo validadas por pesquisa.
+
+Voce recebera: as respostas do aluno ao questionario + o perfil e plano de estudos ja gerados.
+
+Sua tarefa: criar conteudo REFLEXIVO e PROFUNDO para ESTE aluno especifico.
+
+═══════════════════════════════════════════════════
+O QUE GERAR
+═══════════════════════════════════════════════════
+
+1. OBSERVACAO PESSOAL POR MATERIA (5-8 frases cada):
+- Como este aluno deve abordar a materia dado seu perfil emocional
+- Tecnicas baseadas em neurociencia para o tipo de conteudo
+- Pausas e por que (baseado no foco do aluno)
+- Como lidar com dificuldade emocional nesta materia
+- Tom: mentor que conhece o aluno. Direto, acolhedor, sem ser piegas.
+
+Materias e contexto:
+- psicologia_da_saude: relatorios de visitas, producao textual. Media dificuldade.
+- psicologia_experimental_3: memoria humana, 3 provas, revisao espacada obrigatoria. Alta dificuldade.
+- etica_profissional: codigo de etica, apresentacao oral. Baixa-media dificuldade.
+- psicologia_personalidade_2: fenomenologia (Husserl, Heidegger, Merleau-Ponty), fichamento + resenha. MUITO alta dificuldade.
+- metodo_pesquisa_quantitativa: estatistica, 2 provas + projeto. Alta dificuldade.
+- psicologia_desenvolvimento_1: Piaget, Vygotsky, discussao em aula. Media dificuldade.
+
+2. RECOMENDACOES: 5-8 personalizadas, conectadas as respostas especificas do aluno.
+
+3. TECNICAS SUGERIDAS: Baseadas em evidencia (Pomodoro, Feynman, revisao espacada Ebbinghaus, Cornell, 2 minutos, mindfulness, elaborative interrogation, interleaving). Para cada:
+- nome, descricao (3-4 frases com base cientifica), quando_usar, por_que (conectar ao perfil)
+
+4. ALERTAS: Padroes perigosos. Direto e especifico.
+
+5. GUIA DE PRATICAS:
+- resumo_perfil: paragrafo acolhedor
+- secoes: APENAS as relevantes (Gestao de Foco, Ansiedade Academica, Procrastinacao, Constancia/Habitos, Organizacao, Leitura de Textos Densos, Preparacao para Provas)
+- Cada secao: tecnicas com passo-a-passo CONCRETO + exercicio pratico para HOJE
+- Baseie-se em: Pomodoro, Feynman, revisao espacada (Ebbinghaus), Cornell, 2 minutos, mindfulness, elaborative interrogation, interleaving
+
+═══════════════════════════════════════════════════
+REGRAS
+═══════════════════════════════════════════════════
+
+- Conecte TUDO ao perfil. Se marcou ansiedade, cada tecnica deve abordar isso.
+- Profundidade > quantidade. Menos tecnicas bem explicadas > muitas superficiais.
+- Exercicios mentais devem ser PRATICAVEIS em 5 minutos.
+- Cite base cientifica quando relevante.
+- Linguagem acolhedora mas DIRETA.
+
+═══════════════════════════════════════════════════
+FORMATO -- APENAS JSON VALIDO
+═══════════════════════════════════════════════════
+
+{
+  "observacoes_pessoais": {
+    "psicologia_da_saude": "5-8 frases...",
+    "psicologia_experimental_3": "...",
+    "etica_profissional": "...",
+    "psicologia_personalidade_2": "...",
+    "metodo_pesquisa_quantitativa": "...",
+    "psicologia_desenvolvimento_1": "..."
+  },
+  "recomendacoes": [],
+  "tecnicas_sugeridas": [{ "nome": "", "descricao": "", "quando_usar": "", "por_que": "" }],
+  "alertas": [],
+  "guia_praticas": {
+    "resumo_perfil": "",
+    "secoes": [{ "titulo": "", "icone": "", "aparece_se": "", "tecnicas": [{ "nome": "", "passo_a_passo": [], "exercicio_pratico": "" }] }],
+    "tracker_semanal": true
+  }
+}`;
+
+// ═══════════════════════════════════════════════════
+// Helper: chamar OpenAI
+// ═══════════════════════════════════════════════════
+
+async function callOpenAI(
+  model: string,
+  systemPrompt: string,
+  userMessage: string,
+  maxTokens: number,
+  temperature: number,
+) {
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${OPENAI_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userMessage },
+      ],
+      response_format: { type: "json_object" },
+      max_tokens: maxTokens,
+      temperature,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`OpenAI API error (${model}): ${response.status} — ${errorText}`);
+  }
+
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content;
+
+  if (!content) {
+    throw new Error(`Empty response from ${model}`);
+  }
+
+  return JSON.parse(content);
+}
+
+// ═══════════════════════════════════════════════════
+// Edge Function
+// ═══════════════════════════════════════════════════
+
 Deno.serve(async (req: Request) => {
-  // Handle CORS
   if (req.method === "OPTIONS") {
     return new Response("ok", {
       headers: {
@@ -234,39 +238,54 @@ Deno.serve(async (req: Request) => {
       throw new Error("Missing 'respostas' in request body");
     }
 
-    const userMessage = `Aqui estao as respostas do questionario do estudante:\n\n${JSON.stringify(respostas, null, 2)}`;
+    const respostasStr = JSON.stringify(respostas, null, 2);
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o",
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: userMessage },
-        ],
-        response_format: { type: "json_object" },
-        max_tokens: 8000,
-        temperature: 0.7,
-      }),
-    });
+    // ── Chamada 1: GPT-4o → Estrutura ──
+    const estrutura = await callOpenAI(
+      "gpt-4o",
+      PROMPT_ESTRUTURAL,
+      `Respostas do questionario:\n\n${respostasStr}`,
+      5000,
+      0.5,
+    );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`OpenAI API error: ${response.status} — ${errorText}`);
+    // ── Chamada 2: GPT-5.2 → Reflexivo ──
+    const reflexivoInput = [
+      `Respostas do questionario:\n\n${respostasStr}`,
+      `\n\n---\n\nPerfil gerado:\n${estrutura.perfil_resumo}`,
+      `\n\nPlano semanal gerado:\n${JSON.stringify(estrutura.plano_semanal, null, 2)}`,
+    ].join("");
+
+    const reflexivo = await callOpenAI(
+      "gpt-5.2",
+      PROMPT_REFLEXIVO,
+      reflexivoInput,
+      5000,
+      0.8,
+    );
+
+    // ── Merge dos resultados ──
+    const exercicios = estrutura.exercicios_por_materia || {};
+    const observacoes = reflexivo.observacoes_pessoais || {};
+    for (const key of Object.keys(exercicios)) {
+      if (observacoes[key]) {
+        exercicios[key].observacao_pessoal = observacoes[key];
+      }
     }
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
-
-    if (!content) {
-      throw new Error("Empty response from OpenAI");
-    }
-
-    const plan = JSON.parse(content);
+    const plan = {
+      // Da chamada 1 (estrutural)
+      perfil_resumo: estrutura.perfil_resumo,
+      plano_semanal: estrutura.plano_semanal,
+      meta_semanal: estrutura.meta_semanal,
+      exercicios_por_materia: exercicios,
+      cronograma_semestral: estrutura.cronograma_semestral,
+      // Da chamada 2 (reflexivo)
+      recomendacoes: reflexivo.recomendacoes,
+      tecnicas_sugeridas: reflexivo.tecnicas_sugeridas,
+      alertas: reflexivo.alertas,
+      guia_praticas: reflexivo.guia_praticas,
+    };
 
     return new Response(JSON.stringify(plan), {
       headers: {

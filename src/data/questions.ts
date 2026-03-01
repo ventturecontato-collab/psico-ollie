@@ -47,6 +47,14 @@ export const questions: Question[] = [
     required: true,
   },
   {
+    id: 'p23',
+    step: 1,
+    question: 'Você pretende fazer a optativa de Cinema e Psicologia na Quarta-feira de manhã?',
+    type: 'radio',
+    options: ['Sim', 'Não'],
+    required: true,
+  },
+  {
     id: 'p3',
     step: 1,
     question: 'Quais dias da sua semana são os mais cheios ou cansativos?',
