@@ -179,6 +179,9 @@ async function callOpenAI(
   maxTokens: number,
   temperature: number,
 ) {
+  const isGpt5 = model.startsWith("gpt-5");
+  const tokenParam = isGpt5 ? "max_completion_tokens" : "max_tokens";
+
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -192,7 +195,7 @@ async function callOpenAI(
         { role: "user", content: userMessage },
       ],
       response_format: { type: "json_object" },
-      ...(model.startsWith("gpt-5") ? { max_completion_tokens: maxTokens } : { max_tokens: maxTokens }),
+      [tokenParam]: maxTokens,
       temperature,
     }),
   });
@@ -206,6 +209,11 @@ async function callOpenAI(
   const content = data.choices?.[0]?.message?.content;
 
   if (!content) {
+    // Fallback: retry with gpt-4o if gpt-5.2 returns empty
+    if (isGpt5) {
+      console.warn(`Empty response from ${model}, falling back to gpt-4o`);
+      return callOpenAI("gpt-4o", systemPrompt, userMessage, maxTokens, temperature);
+    }
     throw new Error(`Empty response from ${model}`);
   }
 
@@ -260,7 +268,7 @@ Deno.serve(async (req: Request) => {
       "gpt-5.2",
       PROMPT_REFLEXIVO,
       reflexivoInput,
-      5000,
+      8000,
       0.8,
     );
 
