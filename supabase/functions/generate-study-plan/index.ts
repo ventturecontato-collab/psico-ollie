@@ -196,7 +196,7 @@ async function callOpenAI(
       ],
       response_format: { type: "json_object" },
       [tokenParam]: maxTokens,
-      temperature,
+      ...(isGpt5 ? {} : { temperature }),
     }),
   });
 
@@ -253,7 +253,7 @@ Deno.serve(async (req: Request) => {
 
     const [estrutura, reflexivo] = await Promise.all([
       callOpenAI("gpt-4o", PROMPT_ESTRUTURAL, userMsg, 5000, 0.5),
-      callOpenAI("gpt-5.2", PROMPT_REFLEXIVO, userMsg, 5000, 0.8),
+      callOpenAI("gpt-5-mini", PROMPT_REFLEXIVO, userMsg, 4000, 0.8),
     ]);
 
     // ── Merge dos resultados ──
