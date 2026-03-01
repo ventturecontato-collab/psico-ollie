@@ -9,15 +9,26 @@ import RecommendationCard from '../components/RecommendationCard';
 import TechniqueCard from '../components/TechniqueCard';
 import AlertBanner from '../components/AlertBanner';
 import VideoSection from '../components/VideoSection';
-import { RotateCcw } from 'lucide-react';
+import { useState } from 'react';
+import { RotateCcw, Link2, Check } from 'lucide-react';
 
 interface ResultsProps {
   plan: StudyPlan;
   answers: QuestionnaireAnswers;
+  planId?: string | null;
   onRestart: () => void;
 }
 
-export default function Results({ plan, answers, onRestart }: ResultsProps) {
+export default function Results({ plan, answers, planId, onRestart }: ResultsProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyLink = () => {
+    if (!planId) return;
+    const url = `${window.location.origin}${window.location.pathname}?plan=${planId}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
   return (
     <div className="min-h-screen px-4 py-8 max-w-4xl mx-auto animate-fade-in">
       {/* Header com Ollie */}
@@ -79,11 +90,20 @@ export default function Results({ plan, answers, onRestart }: ResultsProps) {
         <AlertBanner alerts={plan.alertas} />
       </div>
 
-      {/* Refazer */}
-      <div className="flex justify-center pb-8">
+      {/* Ações */}
+      <div className="flex justify-center gap-3 pb-8">
+        {planId && (
+          <button
+            onClick={handleCopyLink}
+            className="flex items-center gap-2 px-6 py-3 bg-[#6c5ce7] text-white rounded-xl hover:bg-[#6c5ce7]/80 transition-colors"
+          >
+            {copied ? <Check className="w-5 h-5" /> : <Link2 className="w-5 h-5" />}
+            {copied ? 'Link Copiado!' : 'Copiar Link'}
+          </button>
+        )}
         <button
           onClick={onRestart}
-          className="flex items-center gap-2 px-8 py-3 bg-[#2f3436] text-[#a3a3a3] border border-[#444444] rounded-xl hover:border-[#6c5ce7]/50 transition-colors"
+          className="flex items-center gap-2 px-6 py-3 bg-[#2f3436] text-[#a3a3a3] border border-[#444444] rounded-xl hover:border-[#6c5ce7]/50 transition-colors"
         >
           <RotateCcw className="w-5 h-5" />
           Refazer Questionário

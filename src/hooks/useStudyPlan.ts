@@ -7,14 +7,16 @@ export function useStudyPlan() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const generate = async (answers: QuestionnaireAnswers) => {
+  const generate = async (answers: QuestionnaireAnswers): Promise<StudyPlan | null> => {
     setLoading(true);
     setError(null);
     try {
       const result = await generateStudyPlan(answers);
       setPlan(result);
+      return result;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro desconhecido');
+      return null;
     } finally {
       setLoading(false);
     }
@@ -25,5 +27,5 @@ export function useStudyPlan() {
     setError(null);
   };
 
-  return { plan, loading, error, generate, reset };
+  return { plan, loading, error, generate, reset, setPlan };
 }

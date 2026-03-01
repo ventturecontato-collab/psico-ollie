@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { AppScreen, QuestionnaireAnswers } from './types';
 import { useStudyPlan } from './hooks/useStudyPlan';
+import { savePlan, loadPlan } from './lib/api';
 import Welcome from './pages/Welcome';
 import Questionnaire from './pages/Questionnaire';
 import Loading from './pages/Loading';
@@ -9,20 +10,49 @@ import Results from './pages/Results';
 export default function App() {
   const [screen, setScreen] = useState<AppScreen>('welcome');
   const [answers, setAnswers] = useState<QuestionnaireAnswers>({});
-  const { plan, loading, error, generate, reset } = useStudyPlan();
+  const [planId, setPlanId] = useState<string | null>(null);
+  const { plan, loading, error, generate, reset, setPlan } = useStudyPlan();
+
+  // Check URL for shared plan on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('plan');
+    if (id) {
+      setScreen('loading');
+      loadPlan(id).then((result) => {
+        if (result) {
+          setPlan(result.plan);
+          setAnswers(result.answers);
+          setPlanId(id);
+          setScreen('results');
+        } else {
+          setScreen('welcome');
+        }
+      });
+    }
+  }, []);
 
   const handleStart = () => setScreen('questionnaire');
 
   const handleSubmit = async (formAnswers: QuestionnaireAnswers) => {
     setAnswers(formAnswers);
     setScreen('loading');
-    await generate(formAnswers);
+    const result = await generate(formAnswers);
+    if (result) {
+      const id = await savePlan(formAnswers, result);
+      if (id) {
+        setPlanId(id);
+        window.history.replaceState(null, '', `?plan=${id}`);
+      }
+    }
     setScreen('results');
   };
 
   const handleRestart = () => {
     reset();
     setAnswers({});
+    setPlanId(null);
+    window.history.replaceState(null, '', window.location.pathname);
     setScreen('welcome');
   };
 
@@ -45,7 +75,7 @@ export default function App() {
 
   if (screen === 'results' && plan) {
     return (
-      <Results plan={plan} answers={answers} onRestart={handleRestart} />
+      <Results plan={plan} answers={answers} planId={planId} onRestart={handleRestart} />
     );
   }
 

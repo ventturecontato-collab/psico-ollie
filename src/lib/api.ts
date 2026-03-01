@@ -8,6 +8,31 @@ const supabase = supabaseUrl && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
+export async function savePlan(answers: QuestionnaireAnswers, plan: StudyPlan): Promise<string | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from('study_plans')
+    .insert({ answers, plan_data: plan })
+    .select('id')
+    .single();
+  if (error) {
+    console.warn('Failed to save plan:', error.message);
+    return null;
+  }
+  return data.id;
+}
+
+export async function loadPlan(id: string): Promise<{ plan: StudyPlan; answers: QuestionnaireAnswers } | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from('study_plans')
+    .select('plan_data, answers')
+    .eq('id', id)
+    .single();
+  if (error || !data) return null;
+  return { plan: data.plan_data as StudyPlan, answers: data.answers as QuestionnaireAnswers };
+}
+
 export async function generateStudyPlan(answers: QuestionnaireAnswers): Promise<StudyPlan> {
   if (!supabase) {
     // Fallback: gerar plano mock para desenvolvimento

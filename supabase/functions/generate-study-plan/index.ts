@@ -248,29 +248,13 @@ Deno.serve(async (req: Request) => {
 
     const respostasStr = JSON.stringify(respostas, null, 2);
 
-    // ── Chamada 1: GPT-4o → Estrutura ──
-    const estrutura = await callOpenAI(
-      "gpt-4o",
-      PROMPT_ESTRUTURAL,
-      `Respostas do questionario:\n\n${respostasStr}`,
-      5000,
-      0.5,
-    );
+    // ── Chamadas em paralelo ──
+    const userMsg = `Respostas do questionario:\n\n${respostasStr}`;
 
-    // ── Chamada 2: GPT-5.2 → Reflexivo ──
-    const reflexivoInput = [
-      `Respostas do questionario:\n\n${respostasStr}`,
-      `\n\n---\n\nPerfil gerado:\n${estrutura.perfil_resumo}`,
-      `\n\nPlano semanal gerado:\n${JSON.stringify(estrutura.plano_semanal, null, 2)}`,
-    ].join("");
-
-    const reflexivo = await callOpenAI(
-      "gpt-5.2",
-      PROMPT_REFLEXIVO,
-      reflexivoInput,
-      8000,
-      0.8,
-    );
+    const [estrutura, reflexivo] = await Promise.all([
+      callOpenAI("gpt-4o", PROMPT_ESTRUTURAL, userMsg, 5000, 0.5),
+      callOpenAI("gpt-5.2", PROMPT_REFLEXIVO, userMsg, 5000, 0.8),
+    ]);
 
     // ── Merge dos resultados ──
     const exercicios = estrutura.exercicios_por_materia || {};
