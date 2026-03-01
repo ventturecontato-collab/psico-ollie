@@ -192,7 +192,7 @@ async function callOpenAI(
         { role: "user", content: userMessage },
       ],
       response_format: { type: "json_object" },
-      max_tokens: maxTokens,
+      ...(model.startsWith("gpt-5") ? { max_completion_tokens: maxTokens } : { max_tokens: maxTokens }),
       temperature,
     }),
   });
