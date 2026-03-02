@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { QuestionnaireAnswers } from '../types';
 import { getQuestionsForStep, TOTAL_STEPS } from '../data/questions';
 import { stepTransitionMessages } from '../data/ollieMessages';
@@ -16,6 +16,10 @@ export default function Questionnaire({ onSubmit, onBack }: QuestionnaireProps) 
   const [currentStep, setCurrentStep] = useState(1);
   const [answers, setAnswers] = useState<QuestionnaireAnswers>({});
   const [direction, setDirection] = useState<'right' | 'left'>('right');
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentStep]);
 
   const stepQuestions = getQuestionsForStep(currentStep);
 
